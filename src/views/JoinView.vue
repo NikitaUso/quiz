@@ -1,31 +1,41 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { socket, state } from '../socket'
+// VIKTIGT: Vi importerar saveSession här
+import { socket, state, saveSession } from '../socket'
 
 const router = useRouter()
-const teamName = ref("")
-const gameCode = ref("")
+const teamName = ref("") // Kopplat till input-fältet
+const gameCode = ref("") // Kopplat till input-fältet
 const hasJoined = ref(false)
 
 function joinGame() {
+  // 1. Enkel validering
   if (!teamName.value || !gameCode.value) {
     alert("Du måste fylla i både namn och kod!")
     return
   }
 
+  // 2. Uppdatera vår globala state
   state.playerName = teamName.value
   state.roomCode = gameCode.value
 
+  // 3. SPARA I MINNET (Här är fixen!)
+  // Detta gör att App.vue kan hitta oss om vi laddar om sidan
+  saveSession(gameCode.value, teamName.value)
+
+  // 4. Skicka till servern
   socket.emit("join_game", { 
     room: gameCode.value, 
     name: teamName.value 
   })
 
+  // 5. Visa vänt-skärmen
   hasJoined.value = true
 }
 
 onMounted(() => {
+  // Lyssna på om spelet startar
   socket.on('game_started', () => {
     router.push('/play')
   })

@@ -64,7 +64,7 @@ onMounted(() => {
       </div>
 
       <div class="category-section">
-        <h3>Bonus: Kategori</h3>
+        <h3>Kategori</h3>
         <input v-model="category" placeholder="Vilken är den röda tråden?" class="category-input" />
       </div>
 

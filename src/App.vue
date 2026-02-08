@@ -1,5 +1,27 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import { onMounted } from 'vue'; // <--- VIKTIG: Denna saknades!
+import { RouterView } from 'vue-router';
+import { state, socket, saveSession, getSession } from "./socket";
+
+// Här är "motorn" som kollar om vi ska återansluta när sidan laddas
+onMounted(() => {
+  const session = getSession();
+  
+  // Om vi hittar sparade uppgifter i webbläsaren
+  if (session.room && session.name) {
+    console.log("Hittade session, försöker återansluta...", session);
+    
+    // 1. Återställ vår egen data direkt
+    state.playerName = session.name;
+    state.roomCode = session.room;
+
+    // 2. Säg till servern: "Jag är tillbaka!"
+    socket.emit("rejoin", { 
+      room: session.room, 
+      name: session.name 
+    });
+  }
+});
 </script>
 
 <template>
@@ -16,33 +38,33 @@ import { RouterView } from 'vue-router'
 body {
   margin: 0;
   padding: 0;
-  /* En mörk gradient ser lyxigare ut än platt färg */
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   color: white;
   display: flex;
   justify-content: center;
   min-height: 100vh;
-  font-family: 'Poppins', sans-serif; /* Vårt nya typsnitt */
+  font-family: 'Poppins', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 #app {
   width: 100%;
-  max-width: 900px; /* Lite bredare för att få plats med allt */
+  max-width: 900px;
   text-align: center;
   padding: 20px;
   box-sizing: border-box;
 }
 
-/* Global knapp-design (så alla knappar ser likadana ut) */
+/* Global knapp-design */
 button {
   font-family: 'Poppins', sans-serif;
-  transition: all 0.2s ease; /* Mjuk animation vid klick/hovring */
+  transition: all 0.2s ease;
   box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  cursor: pointer; /* Bra att ha så man ser att det går att klicka */
 }
 
 button:hover {
-  transform: translateY(-2px); /* Lyfter lite när man pekar */
+  transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0,0,0,0.3);
   filter: brightness(1.1);
 }
@@ -54,6 +76,6 @@ button:active {
 /* Rubriker */
 h1, h2, h3 {
   color: #FFCCFD;
-  text-shadow: 0 0 10px rgba(255, 204, 253, 0.3); /* Lite neon-glow */
+  text-shadow: 0 0 10px rgba(255, 204, 253, 0.3);
 }
 </style>
